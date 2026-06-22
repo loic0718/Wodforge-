@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="WodForge">
+<meta name="theme-color" content="#F6F5F1">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23E8472B'/%3E%3Cpath d='M30 50h40M38 38v24M62 38v24M24 44v12M76 44v12' stroke='white' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>WodForge</title>
+<style>
+  :root{
+    --bg:#F6F5F1; --card:#FFFFFF; --ink:#17171B; --sub:#6A6A72; --line:#E7E6E0;
+    --accent:#E8472B; --accentSoft:#FCE9E4; --ok:#1E9E6A; --okSoft:#E3F4EC;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  #shell{max-width:430px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;position:relative}
+  #topbar{display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 14px) 18px 6px}
+  #topbar .logo{font-weight:900;font-size:18px;letter-spacing:-.3px}
+  #topbar .logo span{color:var(--accent)}
+  #main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 18px 120px}
+  h1.screen{font-size:30px;font-weight:800;letter-spacing:-.5px;margin:8px 0 2px}
+  .sub{color:var(--sub);font-size:15px;margin:0 0 14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px}
+  .pillrow{display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;scrollbar-width:none}
+  .pillrow::-webkit-scrollbar{display:none}
+  .pill{padding:8px 14px;border-radius:999px;font-size:14px;font-weight:600;white-space:nowrap;
+    border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+  .pill.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn{padding:14px 18px;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:none;
+    background:var(--accent);color:#fff}
+  .btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+  .btn.ok{background:var(--ok);color:#fff}
+  .row{display:flex;gap:10px}
+  .wod{padding:18px;margin-bottom:14px}
+  .tag{font-size:12px;font-weight:800;color:var(--accent);background:var(--accentSoft);padding:4px 10px;border-radius:999px}
+  .wod h3{font-size:20px;font-weight:800;margin:10px 0 8px}
+  .wod .line{font-size:16px;font-weight:500;line-height:1.7}
+  .wod .line.first{color:var(--sub);font-weight:600;font-size:14px}
+  .heart{background:none;border:none;cursor:pointer;padding:4px;font-size:20px;line-height:1}
+  input,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:15px;
+    color:var(--ink);background:var(--card);font-family:inherit;outline:none}
+  textarea{resize:vertical;min-height:56px}
+  .step{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
+  .stepbtn{width:40px;height:40px;border-radius:999px;border:1px solid var(--line);background:var(--card);
+    cursor:pointer;font-size:20px;color:var(--ink);display:flex;align-items:center;justify-content:center}
+  .menuitem{padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer}
+  .menuicon{width:42px;height:42px;border-radius:12px;background:var(--accentSoft);display:flex;align-items:center;justify-content:center;font-size:22px}
+  .listitem{padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+  .empty{padding:24px;text-align:center;color:var(--sub)}
+  .back{display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--accent);
+    font-weight:700;cursor:pointer;padding:4px 0 12px;font-size:15px}
+  #tabbar{position:fixed;bottom:0;left:0;right:0;max-width:430px;margin:0 auto;background:rgba(255,255,255,.94);
+    border-top:1px solid var(--line);display:flex;padding:8px 0 calc(env(safe-area-inset-bottom) + 14px);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  .tabbtn{flex:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--sub)}
+  .tabbtn.on{color:var(--accent)}
+  .tabbtn .lbl{font-size:11px;font-weight:700}
+  .timerbox{padding:28px 20px;text-align:center;margin-bottom:14px}
+  .bigtime{font-size:64px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+  .phase{font-weight:800;letter-spacing:2px;margin-bottom:4px}
+  svg.ic{width:23px;height:23px;display:block}
+</style>
+</head>
+<body>
+<div id="shell">
+  <div id="topbar">
+    <svg class="ic" viewBox="0 0 24 24" fill="none" style="width:24px;height:24px"><path d="M12 3c1 3-1 4-1 6a3 3 0 006 0c0 4-2 6-5 6s-5-2-5-6c0-3 3-4 5-12z" fill="#E8472B"/></svg>
+    <div class="logo">WOD<span>Forge</span></div>
+  </div>
+  <div id="main"></div>
+  <div id="tabbar"></div>
+</div>
+
+<script>
+/* ===================== DATA ===================== */
+var EQUIPMENT=[
+ {id:"barbell",label:"Barre olympique"},{id:"dumbbell",label:"Haltères"},{id:"kettlebell",label:"Kettlebell"},
+ {id:"pullup",label:"Barre de traction"},{id:"box",label:"Box / step"},{id:"rower",label:"Rameur"},
+ {id:"bike",label:"Vélo / Assault"},{id:"rope",label:"Corde à sauter"},{id:"rings",label:"Anneaux"},
+ {id:"wallball",label:"Wall ball"},{id:"bench",label:"Banc"}
+];
+var MOVEMENTS=[
+ {name:"Air Squat",cat:"gym",equip:[],instr:"Hanches sous les genoux, talons au sol, poitrine haute."},
+ {name:"Push-up",cat:"gym",equip:[],instr:"Corps gréé, coudes ~45°, poitrine au sol."},
+ {name:"Burpee",cat:"gym",equip:[],instr:"Poitrine au sol puis saut avec claquement au-dessus de la tête."},
+ {name:"Sit-up",cat:"gym",equip:[],instr:"Épaules au sol en bas, toucher au-delà des pieds en haut."},
+ {name:"Lunge",cat:"gym",equip:[],instr:"Genou arrière au sol, buste droit."},
+ {name:"Mountain Climber",cat:"gym",equip:[],instr:"Gainage, genoux rapides vers la poitrine."},
+ {name:"Jumping Jack",cat:"mono",equip:[],instr:"Sauts écart, bras au-dessus de la tête."},
+ {name:"Hollow Hold",cat:"gym",equip:[],instr:"Lombaires plaquées, épaules et talons décollés."},
+ {name:"Pull-up",cat:"gym",equip:["pullup"],skill:"pullup",instr:"Menton au-dessus de la barre, bras tendus en bas."},
+ {name:"Chest-to-bar",cat:"gym",equip:["pullup"],skill:"ctb",instr:"Contact poitrine/barre à chaque rep."},
+ {name:"Toes-to-bar",cat:"gym",equip:["pullup"],skill:"ttb",instr:"Orteils touchent la barre, pieds rejoignent le sol contrôlés."},
+ {name:"Knees-to-elbow",cat:"gym",equip:["pullup"],instr:"Genoux remontent vers les coudes."},
+ {name:"Muscle-up",cat:"gym",equip:["rings"],skill:"mu",instr:"Transition tirage → poussée, verrouillage bras tendus."},
+ {name:"Ring Row",cat:"gym",equip:["rings"],instr:"Corps gréé, tirer la poitrine vers les anneaux."},
+ {name:"Ring Dip",cat:"gym",equip:["rings"],instr:"Descente contrôlée, verrouillage en haut."},
+ {name:"Handstand Push-up",cat:"gym",equip:[],skill:"hspu",instr:"Tête au sol, poussée jusqu'au verrouillage."},
+ {name:"Box Jump",cat:"gym",equip:["box"],skill:"boxjump",instr:"Réception genoux souples, extension complète en haut."},
+ {name:"Step-up",cat:"gym",equip:["box"],instr:"Monter complètement sur la box, alterner."},
+ {name:"Double Under",cat:"mono",equip:["rope"],skill:"du",instr:"Deux passages de corde par saut."},
+ {name:"Single Under",cat:"mono",equip:["rope"],instr:"Un passage de corde par saut."},
+ {name:"Row (cal)",cat:"mono",equip:["rower"],instr:"Tirage jambes → hanches → bras."},
+ {name:"Bike (cal)",cat:"mono",equip:["bike"],instr:"Cadence régulière, pousser et tirer."},
+ {name:"Wall Ball",cat:"mono",equip:["wallball"],instr:"Squat complet puis lancer au-dessus de la cible."},
+ {name:"Back Squat",cat:"wl",equip:["barbell"],instr:"Barre sur trapèzes, hanches sous parallèle."},
+ {name:"Front Squat",cat:"wl",equip:["barbell"],instr:"Coudes hauts, barre sur les épaules."},
+ {name:"Deadlift",cat:"wl",equip:["barbell"],instr:"Dos neutre, extension hanches/genoux ensemble."},
+ {name:"Shoulder Press",cat:"wl",equip:["barbell"],instr:"Strict, gainage, verrouillage tête entre les bras."},
+ {name:"Push Press",cat:"wl",equip:["barbell"],instr:"Dip-drive des jambes puis poussée."},
+ {name:"Push Jerk",cat:"wl",equip:["barbell"],skill:"oly",instr:"Réception sous la barre, bras verrouillés."},
+ {name:"Clean",cat:"wl",equip:["barbell"],skill:"oly",instr:"Sol → épaules, réception en squat."},
+ {name:"Power Clean",cat:"wl",equip:["barbell"],skill:"oly",instr:"Réception au-dessus du parallèle."},
+ {name:"Snatch",cat:"wl",equip:["barbell"],skill:"oly",instr:"Sol → overhead en un mouvement."},
+ {name:"Thruster",cat:"wl",equip:["barbell"],instr:"Front squat enchaîné à un push press."},
+ {name:"DB Snatch",cat:"wl",equip:["dumbbell"],instr:"Haltère sol → overhead, alterner les bras."},
+ {name:"DB Thruster",cat:"wl",equip:["dumbbell"],instr:"Squat haltères sur épaules puis poussée."},
+ {name:"DB Push Press",cat:"wl",equip:["dumbbell"],instr:"Dip-drive puis poussée des haltères."},
+ {name:"Devil Press",cat:"wl",equip:["dumbbell"],instr:"Burpee haltères puis snatch double."},
+ {name:"KB Swing",cat:"wl",equip:["kettlebell"],instr:"Poussée de hanches, kettlebell à hauteur des yeux (ou overhead)."},
+ {name:"Goblet Squat",cat:"wl",equip:["kettlebell"],instr:"Kettlebell à la poitrine, squat complet."},
+ {name:"KB Snatch",cat:"wl",equip:["kettlebell"],instr:"Sol → overhead en un mouvement."},
+ {name:"Bench Press",cat:"wl",equip:["barbell","bench"],instr:"Omoplates serrées, barre au sternum."},
+ {name:"Run (m)",cat:"mono",equip:[],instr:"Course, foulée régulière."}
+];
+var SKILLS=[
+ {id:"pullup",label:"Pull-ups"},{id:"ctb",label:"Chest-to-bar"},{id:"ttb",label:"Toes-to-bar"},
+ {id:"du",label:"Double unders"},{id:"hspu",label:"Handstand push-ups"},{id:"mu",label:"Muscle-ups"},
+ {id:"oly",label:"Haltérophilie"},{id:"boxjump",label:"Box jumps"}
+];
+var LIBRARY=[
+ {id:"fran",name:"Fran",tag:"Benchmark",format:"FOR TIME",cap:600,lines:["21-15-9 reps :","Thrusters (43/30 kg)","Pull-ups"]},
+ {id:"cindy",name:"Cindy",tag:"Benchmark",format:"AMRAP",dur:20,lines:["AMRAP 20 min :","5 Pull-ups","10 Push-ups","15 Air Squats"]},
+ {id:"annie",name:"Annie",tag:"Benchmark",format:"FOR TIME",cap:600,lines:["50-40-30-20-10 reps :","Double Unders","Sit-ups"]},
+ {id:"helen",name:"Helen",tag:"Benchmark",format:"FOR TIME",cap:900,lines:["3 tours pour le temps :","400 m Run","21 KB Swings (24/16 kg)","12 Pull-ups"]},
+ {id:"diane",name:"Diane",tag:"Benchmark",format:"FOR TIME",cap:600,lines:["21-15-9 reps :","Deadlifts (102/70 kg)","Handstand Push-ups"]},
+ {id:"murph",name:"Murph",tag:"Hero",format:"FOR TIME",cap:3600,lines:["Pour le temps :","1 mile Run","100 Pull-ups","200 Push-ups","300 Air Squats","1 mile Run","(gilet 9/6 kg en option)"]},
+ {id:"dt",name:"DT",tag:"Hero",format:"FOR TIME",cap:1200,lines:["5 tours pour le temps :","12 Deadlifts (70/47 kg)","9 Hang Power Cleans","6 Push Jerks"]},
+ {id:"chelsea",name:"Chelsea",tag:"Benchmark",format:"EMOM",dur:30,lines:["EMOM 30 min :","5 Pull-ups","10 Push-ups","15 Air Squats"]},
+ {id:"tabthis",name:"Tabata This",tag:"Tabata",format:"TABATA",rounds:8,work:20,rest:10,lines:["Tabata 20s/10s × 8 sur chaque :","Row","Air Squats","Pull-ups","Push-ups","Sit-ups"]},
+ {id:"partner",name:"You Go I Go",tag:"Partner",format:"AMRAP",dur:16,lines:["En binôme, AMRAP 16 min :","Alternez tours complets :","10 Burpees","15 KB Swings","20 Wall Balls"]}
+];
+
+/* ===================== STATE / STORAGE ===================== */
+var DEFAULT={
+ equip:["barbell","dumbbell","kettlebell","pullup","box","rope"],
+ skills:["pullup","du","boxjump","oly"], log:[], prs:[], favs:[], favWods:[]
+};
+function load(){try{var s=JSON.parse(localStorage.getItem("wodforge")||"{}");return Object.assign({},DEFAULT,s);}catch(e){return Object.assign({},DEFAULT);}}
+function save(){try{localStorage.setItem("wodforge",JSON.stringify({equip:S.equip,skills:S.skills,log:S.log,prs:S.prs,favs:S.favs,favWods:S.favWods}));}catch(e){}}
+var S=load();
+S.tab="gen"; S.genFormat="RANDOM"; S.genWod=null; S.libTab="Tous"; S.profView="menu";
+S.preset=null; S.timer=null; S.build={title:"",parts:{"Échauffement":"","Force":"","Metcon":"","Finisher":""}};
+
+/* ===================== HELPERS ===================== */
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function sample(a,n){var c=a.slice(),o=[];while(c.length&&o.length<n)o.push(c.splice(Math.floor(Math.random()*c.length),1)[0]);return o;}
+function mmss(s){s=Math.max(0,s);return Math.floor(s/60)+":"+String(Math.floor(s%60)).padStart(2,"0");}
+function esc(t){return(""+t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function today(){return new Date().toLocaleDateString("fr-FR");}
+function wodKey(w){return w.id||(w.format+":"+w.lines.join("|"));}
+
+var _ac=null;
+function beep(f,d,v){f=f||880;d=d||140;v=v||0.25;try{var Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;if(!_ac)_ac=new Ctx();if(_ac.state==="suspended")_ac.resume();var o=_ac.createOscillator(),g=_ac.createGain();o.type="sine";o.frequency.value=f;g.gain.setValueAtTime(v,_ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,_ac.currentTime+d/1000);o.connect(g);g.connect(_ac.destination);o.start();o.stop(_ac.currentTime+d/1000);}catch(e){}}
+
+function availMoves(){return MOVEMENTS.filter(function(m){
+ var he=m.equip.every(function(e){return S.equip.indexOf(e)>=0;});
+ var hs=!m.skill||S.skills.indexOf(m.skill)>=0; return he&&hs;});}
+
+function genWOD(format){
+ var pool=availMoves(); if(pool.length<2)return null;
+ var fmt=format==="RANDOM"?pick(["AMRAP","EMOM","FOR TIME","TABATA","CHIPPER","FOR LOAD"]):format;
+ var reps=[9,10,12,15,20,21,25,30];
+ if(fmt==="FOR LOAD"){var lifts=pool.filter(function(m){return m.cat==="wl";});if(!lifts.length)return genWOD("AMRAP");
+  var m=pick(lifts),sc=pick(["5-5-5-5-5","3-3-3-3-3","5×3","10-8-6-4-2","1-1-1-1-1"]);
+  return{format:"FOR LOAD",title:"Force — "+m.name,lines:[sc+" "+m.name,"Charge croissante, repos 2–3 min","Note ta charge max dans le journal"]};}
+ if(fmt==="TABATA"){var ms=sample(pool,Math.min(2,pool.length));
+  return{format:"TABATA",title:"Tabata",rounds:8,work:20,rest:10,lines:["Tabata 20s travail / 10s repos × 8 :"].concat(ms.map(function(m){return m.name;}))};}
+ if(fmt==="EMOM"){var d=pick([10,12,14,16,20]),ms=sample(pool,2),r=ms.map(function(){return pick([8,10,12,15]);});
+  return{format:"EMOM",title:"EMOM "+d,dur:d,lines:["EMOM "+d+" min :","Minutes impaires : "+r[0]+" "+ms[0].name,"Minutes paires : "+r[1]+" "+ms[1].name]};}
+ if(fmt==="CHIPPER"){var ms=sample(pool,Math.min(5,pool.length));
+  return{format:"FOR TIME",title:"Chipper",cap:1500,lines:["Pour le temps, une seule fois :"].concat(ms.map(function(m){return pick([30,40,50])+" "+m.name;}))};}
+ if(fmt==="AMRAP"){var d=pick([8,10,12,15,20]),ms=sample(pool,pick([2,3]));
+  return{format:"AMRAP",title:"AMRAP "+d,dur:d,lines:["AMRAP "+d+" min :"].concat(ms.map(function(m){return pick(reps)+" "+m.name;}))};}
+ var sc=pick(["21-15-9","5 tours","3 tours","10-9-8-7-6-5-4-3-2-1"]),ms=sample(pool,pick([2,3])),lines;
+ if(sc.indexOf("tours")>=0)lines=[sc+" pour le temps :"].concat(ms.map(function(m){return pick(reps)+" "+m.name;}));
+ else lines=[sc+" reps :"].concat(ms.map(function(m){return m.name;}));
+ return{format:"FOR TIME",title:"For Time",cap:1200,lines:lines};
+}
+
+/* ===================== ICONS ===================== */
+function ic(n){var p={
+ gen:'<path d="M16 3h5v5M21 3l-7 7M8 21H3v-5M3 21l7-7M3 8V3h5M3 3l7 7M21 16v5h-5M21 21l-7-7"/>',
+ lib:'<path d="M4 5a2 2 0 012-2h12v18H6a2 2 0 01-2-2z"/><path d="M9 3v18"/>',
+ create:'<path d="M12 5v14M5 12h14"/>',
+ timer:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/>',
+ profile:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>'
+}[n];return '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';}
+
+/* ===================== RENDER ===================== */
+var main=document.getElementById("main");
+function render(){
+ main.scrollTop=main.scrollTop; // keep
+ if(S.tab==="gen")renderGen();
+ else if(S.tab==="lib")renderLib();
+ else if(S.tab==="create")renderBuild();
+ else if(S.tab==="timer")renderTimer();
+ else if(S.tab==="profile")renderProfile();
+ renderTabs();
+}
+function renderTabs(){
+ var tabs=[["gen","Générer"],["lib","Biblio"],["create","Créer"],["timer","Timer"],["profile","Profil"]];
+ document.getElementById("tabbar").innerHTML=tabs.map(function(t){
+  return '<button class="tabbtn '+(S.tab===t[0]?"on":"")+'" onclick="WF.go(\''+t[0]+'\')">'+ic(t[0])+'<span class="lbl">'+t[1]+'</span></button>';
+ }).join("");
+}
+function wodHTML(w,withStart){
+ var faved=S.favs.indexOf(wodKey(w))>=0;
+ var lines=w.lines.map(function(l,i){return '<div class="line'+(i===0?" first":"")+'">'+esc(l)+'</div>';}).join("");
+ return '<div class="card wod">'+
+  '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'+
+  '<span class="tag">'+esc(w.format)+(w.tag?" · "+esc(w.tag):"")+'</span>'+
+  '<button class="heart" onclick="WF.fav(\''+esc(wodKey(w)).replace(/'/g,"")+'\')">'+(faved?"♥":"♡")+'</button></div>'+
+  (w.title||w.name?'<h3>'+esc(w.name||w.title)+'</h3>':"")+lines+
+  (withStart?'<div style="margin-top:14px"><button class="btn" onclick="WF.start(\''+esc(wodKey(w)).replace(/'/g,"")+'\')">▶ Démarrer</button></div>':"")+
+ '</div>';
+}
+
+/* ---- Generator ---- */
+function renderGen(){
+ if(!S.genWod)S.genWod=genWOD("RANDOM");
+ var fmts=["RANDOM","AMRAP","EMOM","FOR TIME","TABATA","CHIPPER","FOR LOAD"];
+ main.innerHTML='<h1 class="screen">Générateur</h1>'+
+  '<p class="sub">'+availMoves().length+' mouvements dispo selon ton matériel</p>'+
+  '<div class="pillrow">'+fmts.map(function(f){return '<button class="pill '+(S.genFormat===f?"on":"")+'" onclick="WF.setFmt(\''+f+'\')">'+(f==="RANDOM"?"Aléatoire":f)+'</button>';}).join("")+'</div>'+
+  (S.genWod?wodHTML(S.genWod,true):'<div class="card empty">Pas assez de matériel/compétences. Ajoute-en dans Profil.</div>')+
+  '<button class="btn" onclick="WF.gen()">⤮ Générer un WOD</button>';
+}
+
+/* ---- Library ---- */
+function renderLib(){
+ var tabs=["Tous","Favoris","Benchmark","Hero","Tabata","Partner"];
+ var list=LIBRARY;
+ if(S.libTab==="Favoris")list=S.favWods;
+ else if(S.libTab!=="Tous")list=LIBRARY.filter(function(w){return w.tag===S.libTab;});
+ main.innerHTML='<h1 class="screen">Bibliothèque</h1>'+
+  '<p class="sub">WODs de référence, Hero & partenaire</p>'+
+  '<div class="pillrow">'+tabs.map(function(t){return '<button class="pill '+(S.libTab===t?"on":"")+'" onclick="WF.setLib(\''+t+'\')">'+t+'</button>';}).join("")+'</div>'+
+  (list.length?list.map(function(w){return wodHTML(w,true);}).join(""):'<div class="card empty">Aucun favori. Touche le ♡ sur un WOD.</div>');
+}
+
+/* ---- Builder ---- */
+function buildPreview(){
+ var blocks=["Échauffement","Force","Metcon","Finisher"];
+ var compiled=blocks.filter(function(b){return S.build.parts[b].trim();});
+ if(!compiled.length)return "";
+ return '<div class="card" style="padding:18px;margin-bottom:14px"><div style="font-size:18px;font-weight:800;margin-bottom:8px">'+esc(S.build.title||"Mon WOD")+'</div>'+
+   compiled.map(function(b){return '<div style="margin-bottom:8px"><div style="color:var(--accent);font-weight:700;font-size:13px">'+b.toUpperCase()+'</div><div style="white-space:pre-wrap">'+esc(S.build.parts[b])+'</div></div>';}).join("")+'</div>';
+}
+function renderBuild(){
+ var blocks=["Échauffement","Force","Metcon","Finisher"];
+ main.innerHTML='<h1 class="screen">Créer un WOD</h1>'+
+  '<p class="sub">Assemble échauffement, force, metcon, finisher</p>'+
+  '<div class="card" style="padding:16px;margin-bottom:14px">'+
+   '<input value="'+esc(S.build.title)+'" placeholder="Nom du WOD (ex : Lundi engine)" oninput="WF.bset(\'title\',this.value)" style="font-weight:700;margin-bottom:14px">'+
+   blocks.map(function(b){return '<div style="margin-bottom:14px"><div style="font-weight:700;margin-bottom:6px">'+b+'</div>'+
+     '<textarea placeholder="'+(b==="Metcon"?"ex : AMRAP 12 — 10 Thrusters, 12 Pull-ups…":"Optionnel…")+'" oninput="WF.bset(\''+b+'\',this.value)">'+esc(S.build.parts[b])+'</textarea></div>';}).join("")+
+  '</div>'+
+  '<div id="bprev">'+buildPreview()+'</div>'+
+  '<div class="row"><button class="btn ghost" onclick="WF.buildStart()" style="flex:1">⏱ Timer</button>'+
+   '<button class="btn ok" onclick="WF.buildSave()" style="flex:1">⤓ Sauver</button></div>';
+}
+
+/* ---- Profile ---- */
+function renderProfile(){
+ if(S.profView==="menu")return renderProfMenu();
+ if(S.profView==="equip")return renderEquip();
+ if(S.profView==="skills")return renderSkills();
+ if(S.profView==="ex")return renderEx();
+ if(S.profView==="log")return renderLog();
+ if(S.profView==="pr")return renderPR();
+}
+function renderProfMenu(){
+ var items=[["log","📋","Journal d'entraînement",S.log.length+" séances"],
+  ["pr","🏆","Records personnels",S.prs.length+" PR"],
+  ["skills","✨","Compétences",S.skills.length+" actives"],
+  ["equip","🏋️","Mon matériel",S.equip.length+" items"],
+  ["ex","📖","Bibliothèque de mouvements",MOVEMENTS.length+" mouvements"]];
+ main.innerHTML='<h1 class="screen">Profil</h1><p class="sub">Suivi, records et réglages</p>'+
+  items.map(function(it){return '<div class="card menuitem" onclick="WF.prof(\''+it[0]+'\')">'+
+    '<div class="menuicon">'+it[1]+'</div><div style="flex:1"><div style="font-weight:700">'+it[2]+'</div>'+
+    '<div style="color:var(--sub);font-size:13px">'+it[3]+'</div></div><div style="color:var(--sub)">›</div></div>';}).join("");
+}
+function backBtn(t){return '<button class="back" onclick="WF.prof(\'menu\')">‹ '+t+'</button>';}
+function renderEquip(){
+ main.innerHTML=backBtn("Mon matériel")+'<div class="pillrow" style="flex-wrap:wrap;overflow:visible">'+
+  EQUIPMENT.map(function(e){return '<button class="pill '+(S.equip.indexOf(e.id)>=0?"on":"")+'" onclick="WF.tog(\'equip\',\''+e.id+'\')">'+e.label+'</button>';}).join("")+'</div>'+
+  '<p class="sub" style="margin-top:14px">Le générateur n\'utilise que le matériel coché (poids de corps toujours dispo).</p>';
+}
+function renderSkills(){
+ main.innerHTML=backBtn("Compétences")+'<p class="sub">Décoche ce que tu ne maîtrises pas : les mouvements liés seront exclus.</p>'+
+  '<div class="pillrow" style="flex-wrap:wrap;overflow:visible">'+
+  SKILLS.map(function(s){return '<button class="pill '+(S.skills.indexOf(s.id)>=0?"on":"")+'" onclick="WF.tog(\'skills\',\''+s.id+'\')">'+s.label+'</button>';}).join("")+'</div>';
+}
+function renderEx(){
+ var cats={wl:"Haltéro / charge",gym:"Gymnastique",mono:"Cardio / mono"};
+ var html=backBtn("Mouvements");
+ Object.keys(cats).forEach(function(c){
+  html+='<div style="font-weight:800;margin:6px 0 10px;font-size:18px">'+cats[c]+'</div>';
+  MOVEMENTS.filter(function(m){return m.cat===c;}).forEach(function(m){
+   html+='<div class="card" style="padding:14px;margin-bottom:8px"><div style="font-weight:700">'+m.name+'</div>'+
+     '<div style="color:var(--sub);font-size:14px;margin-top:2px">'+m.instr+'</div></div>';});
+ });
+ main.innerHTML=html;
+}
+function renderLog(){
+ main.innerHTML=backBtn("Journal")+
+  (S.log.length?S.log.map(function(e,i){return '<div class="card listitem">'+
+    '<div style="flex:1"><div style="font-weight:700">'+esc(e.title)+' <span style="color:var(--accent);font-size:12px">· '+esc(e.format)+'</span></div>'+
+    '<div style="font-size:14px">'+esc(e.result)+'</div><div style="color:var(--sub);font-size:12px">'+esc(e.date)+'</div></div>'+
+    '<button class="heart" onclick="WF.delLog('+i+')">🗑</button></div>';}).join(""):'<div class="card empty">Vide. Termine un WOD au timer et enregistre-le.</div>');
+}
+function renderPR(){
+ main.innerHTML=backBtn("Records personnels")+
+  '<div class="card" style="padding:14px;margin-bottom:14px"><div class="row" style="margin-bottom:8px">'+
+   '<input id="prn" placeholder="Mouvement (ex : Back Squat)"><input id="prv" placeholder="ex : 120 kg" style="max-width:110px"></div>'+
+   '<button class="btn" onclick="WF.addPR()">＋ Ajouter un PR</button></div>'+
+  (S.prs.length?S.prs.map(function(p,i){return '<div class="card listitem"><span style="font-size:20px">🏆</span>'+
+    '<div style="flex:1"><div style="font-weight:700">'+esc(p.name)+'</div><div style="color:var(--sub);font-size:12px">'+esc(p.date)+'</div></div>'+
+    '<div style="font-weight:800;color:var(--accent);font-size:18px">'+esc(p.val)+'</div>'+
+    '<button class="heart" onclick="WF.delPR('+i+')">🗑</button></div>';}).join(""):'<div class="card empty">Aucun record. Ajoute ton premier 1RM ou meilleur temps.</div>');
+}
+
+/* ---- Timer ---- */
+function initTimer(preset){
+ var mode=preset?(preset.format==="AMRAP"?"AMRAP":preset.format==="EMOM"?"EMOM":preset.format==="TABATA"?"TABATA":"FORTIME"):"FORTIME";
+ S.timer={mode:mode,running:false,elapsed:0,rounds:0,done:false,start:0,lastMin:-1,lastPhase:"",
+  amrapMin:(preset&&preset.dur)||12,emomMin:(preset&&preset.dur)||10,
+  forCap:Math.round(((preset&&preset.cap)||1200)/60)||20,
+  tabWork:(preset&&preset.work)||20,tabRest:(preset&&preset.rest)||10,tabRounds:(preset&&preset.rounds)||8,restSec:90};
+}
+function renderTimer(){
+ if(!S.timer)initTimer(S.preset);
+ var t=S.timer;
+ var modes=[["AMRAP","AMRAP"],["EMOM","EMOM"],["FORTIME","For Time"],["TABATA","Tabata"],["REST","Repos"]];
+ var cfg="";
+ function stepHTML(label,key,step,min){step=step||1;min=min===undefined?1:min;
+  return '<div class="step"><span style="font-weight:600">'+label+'</span><div style="display:flex;align-items:center;gap:14px">'+
+   '<button class="stepbtn" onclick="WF.cfg(\''+key+'\',-'+step+','+min+')">−</button>'+
+   '<span style="font-weight:800;min-width:32px;text-align:center">'+t[key]+'</span>'+
+   '<button class="stepbtn" onclick="WF.cfg(\''+key+'\','+step+','+min+')">＋</button></div></div>';}
+ if(t.mode==="AMRAP")cfg=stepHTML("Durée (min)","amrapMin");
+ else if(t.mode==="EMOM")cfg=stepHTML("Durée (min)","emomMin");
+ else if(t.mode==="FORTIME")cfg=stepHTML("Time cap (min, 0 = sans)","forCap",1,0);
+ else if(t.mode==="REST")cfg=stepHTML("Repos (sec)","restSec",5,5);
+ else if(t.mode==="TABATA")cfg=stepHTML("Effort (sec)","tabWork",5,5)+stepHTML("Repos (sec)","tabRest",5,5)+stepHTML("Rounds","tabRounds");
+
+ var showRounds=(t.mode==="AMRAP"||t.mode==="FORTIME");
+ main.innerHTML='<h1 class="screen">Timer</h1>'+
+  '<p class="sub">'+(S.preset?"Préréglé : "+esc(S.preset.name||S.preset.title):"AMRAP · EMOM · For Time · Tabata · Repos")+'</p>'+
+  '<div class="pillrow">'+modes.map(function(m){return '<button class="pill '+(t.mode===m[0]?"on":"")+'" onclick="WF.tmode(\''+m[0]+'\')">'+m[1]+'</button>';}).join("")+'</div>'+
+  '<div class="card timerbox" id="tbox">'+
+   '<div class="phase" id="tphase" style="display:none"></div>'+
+   '<div class="bigtime" id="tbig">0:00</div>'+
+   '<div id="tsmall" style="color:var(--sub);margin-top:6px;font-weight:600"></div>'+
+   (showRounds?'<div style="margin-top:18px"><div style="color:var(--sub);font-size:13px;font-weight:600;margin-bottom:6px">TOURS / REPS</div>'+
+     '<div style="display:flex;align-items:center;justify-content:center;gap:22px">'+
+     '<button class="stepbtn" onclick="WF.rounds(-1)">−</button>'+
+     '<span id="trounds" style="font-size:40px;font-weight:800;color:var(--accent);min-width:50px">'+t.rounds+'</span>'+
+     '<button class="stepbtn" onclick="WF.rounds(1)">＋</button></div></div>':"")+
+   '<div id="tdone" style="margin-top:14px;color:var(--ok);font-weight:800;display:none"></div>'+
+  '</div>'+
+  '<div class="row" style="margin-bottom:14px"><button class="btn" id="tplay" onclick="WF.tplay()" style="flex:1">▶ Démarrer</button>'+
+   '<button class="btn ghost" onclick="WF.treset()" style="width:56px;flex:none">↺</button></div>'+
+  '<button class="btn ok" id="tsave" onclick="WF.tsave()" style="margin-bottom:14px;display:none">⤓ Enregistrer au journal</button>'+
+  '<div class="card" style="padding:6px 18px">'+cfg+'</div>';
+ updateTimerDisplay();
+}
+function updateTimerDisplay(){
+ var t=S.timer;if(!t)return;
+ var big="0:00",small="",phase="";
+ if(t.mode==="AMRAP")big=mmss(t.amrapMin*60-t.elapsed);
+ else if(t.mode==="EMOM"){var inm=t.elapsed%60;big=mmss(inm===0?60:60-inm);small="Minute "+Math.min(t.emomMin,Math.floor(t.elapsed/60)+1)+" / "+t.emomMin;}
+ else if(t.mode==="REST")big=mmss(t.restSec-t.elapsed);
+ else if(t.mode==="TABATA"){var cyc=t.tabWork+t.tabRest,inc=t.elapsed%cyc,isW=inc<t.tabWork;phase=isW?"EFFORT":"REPOS";big=mmss(isW?t.tabWork-inc:cyc-inc);small="Round "+Math.min(t.tabRounds,Math.floor(t.elapsed/cyc)+1)+" / "+t.tabRounds;}
+ else big=mmss(t.elapsed);
+ var eb=document.getElementById("tbig");if(eb)eb.textContent=big;
+ var es=document.getElementById("tsmall");if(es)es.textContent=small;
+ var ep=document.getElementById("tphase");if(ep){if(phase){ep.style.display="block";ep.textContent=phase;ep.style.color=phase==="EFFORT"?"var(--accent)":"var(--ok)";}else ep.style.display="none";}
+ var box=document.getElementById("tbox");if(box)box.style.background=(t.mode==="TABATA"&&t.running)?(phase==="EFFORT"?"var(--accentSoft)":"var(--okSoft)"):"var(--card)";
+ var tr=document.getElementById("trounds");if(tr)tr.textContent=t.rounds;
+ var pl=document.getElementById("tplay");if(pl)pl.innerHTML=t.running?"⏸ Pause":(t.elapsed>0?"▶ Reprendre":"▶ Démarrer");
+ var sv=document.getElementById("tsave");if(sv)sv.style.display=t.elapsed>0?"flex":"none";
+ var dn=document.getElementById("tdone");if(dn){if(t.done){dn.style.display="block";dn.textContent="Terminé ! Temps : "+mmss(t.elapsed);}else dn.style.display="none";}
+}
+var rafId=null;
+function loop(){
+ var t=S.timer;if(!t||!t.running){rafId=null;return;}
+ t.elapsed=(Date.now()-t.start)/1000;
+ // limites + sons
+ if(t.mode==="AMRAP"){if(t.elapsed>=t.amrapMin*60){t.elapsed=t.amrapMin*60;t.running=false;t.done=true;beep(440,500);}}
+ else if(t.mode==="EMOM"){var total=t.emomMin*60,m=Math.floor(t.elapsed/60);if(m!==t.lastMin&&t.elapsed<total){t.lastMin=m;beep(880,120);}if(t.elapsed>=total){t.elapsed=total;t.running=false;t.done=true;beep(440,500);}}
+ else if(t.mode==="REST"){if(t.elapsed>=t.restSec){t.elapsed=t.restSec;t.running=false;t.done=true;beep(440,400);}}
+ else if(t.mode==="TABATA"){var cyc=t.tabWork+t.tabRest,total=cyc*t.tabRounds,inc=t.elapsed%cyc,phase=inc<t.tabWork?"work":"rest";if(phase!==t.lastPhase&&t.elapsed<total){t.lastPhase=phase;beep(phase==="work"?980:520,160);}if(t.elapsed>=total){t.elapsed=total;t.running=false;t.done=true;beep(440,500);}}
+ else if(t.mode==="FORTIME"){if(t.forCap>0&&t.elapsed>=t.forCap*60){t.elapsed=t.forCap*60;t.running=false;t.done=true;beep(440,500);}}
+ updateTimerDisplay();
+ if(t.running)rafId=requestAnimationFrame(loop);else rafId=null;
+}
+
+/* ===================== ACTIONS ===================== */
+var WF={
+ go:function(tab){if(S.tab==="timer"&&S.timer&&S.timer.running){S.timer.running=false;}if(tab!=="timer")S.preset=null;S.tab=tab;render();},
+ setFmt:function(f){S.genFormat=f;S.genWod=genWOD(f);beep(660,60,0.12);render();},
+ gen:function(){S.genWod=genWOD(S.genFormat);beep(660,60,0.12);render();},
+ setLib:function(t){S.libTab=t;render();},
+ fav:function(key){var idx=S.favs.indexOf(key);
+  if(idx>=0){S.favs.splice(idx,1);S.favWods=S.favWods.filter(function(w){return wodKey(w)!==key;});}
+  else{S.favs.push(key);var src=null;if(S.genWod&&wodKey(S.genWod)===key)src=S.genWod;else src=LIBRARY.filter(function(w){return wodKey(w)===key;})[0];
+   if(src&&!S.favWods.filter(function(w){return wodKey(w)===key;}).length){var copy=JSON.parse(JSON.stringify(src));if(!copy.id)copy.id=key;S.favWods.unshift(copy);}}
+  save();render();},
+ start:function(key){var w=null;if(S.genWod&&wodKey(S.genWod)===key)w=S.genWod;
+  if(!w)w=LIBRARY.filter(function(x){return wodKey(x)===key;})[0];
+  if(!w)w=S.favWods.filter(function(x){return wodKey(x)===key;})[0];
+  S.preset=w;S.timer=null;initTimer(w);S.tab="timer";render();},
+ prof:function(v){S.profView=v;render();},
+ tog:function(field,id){var a=S[field],i=a.indexOf(id);if(i>=0)a.splice(i,1);else a.push(id);save();render();},
+ bset:function(k,v){if(k==="title")S.build.title=v;else S.build.parts[k]=v;
+  var pv=document.getElementById("bprev");if(pv)pv.innerHTML=buildPreview();},
+ buildStart:function(){S.preset={format:"FOR TIME",name:S.build.title||"Mon WOD",lines:[]};S.timer=null;initTimer(S.preset);S.tab="timer";render();},
+ buildSave:function(){var blocks=["Échauffement","Force","Metcon","Finisher"];var c=blocks.filter(function(b){return S.build.parts[b].trim();});
+  if(!c.length)return;S.log.unshift({title:S.build.title||"Mon WOD",format:"Créé",result:c.map(function(b){return S.build.parts[b];}).join(" / ").slice(0,80),date:today()});save();S.tab="profile";S.profView="log";render();},
+ addPR:function(){var n=document.getElementById("prn").value.trim(),v=document.getElementById("prv").value.trim();if(!n||!v)return;
+  S.prs.unshift({name:n,val:v,date:today()});save();render();},
+ delPR:function(i){S.prs.splice(i,1);save();render();},
+ delLog:function(i){S.log.splice(i,1);save();render();},
+ tmode:function(m){if(rafId)cancelAnimationFrame(rafId);rafId=null;S.timer.mode=m;S.timer.running=false;S.timer.elapsed=0;S.timer.rounds=0;S.timer.done=false;S.timer.lastMin=-1;S.timer.lastPhase="";render();},
+ tplay:function(){var t=S.timer;if(t.done){return;}t.running=!t.running;if(t.running){beep(700,80,0.15);t.start=Date.now()-t.elapsed*1000;if(!rafId)rafId=requestAnimationFrame(loop);}updateTimerDisplay();},
+ treset:function(){if(rafId)cancelAnimationFrame(rafId);rafId=null;var t=S.timer;t.running=false;t.elapsed=0;t.rounds=0;t.done=false;t.lastMin=-1;t.lastPhase="";updateTimerDisplay();render();},
+ rounds:function(d){S.timer.rounds=Math.max(0,S.timer.rounds+d);updateTimerDisplay();},
+ cfg:function(key,delta,min){S.timer[key]=Math.max(min,S.timer[key]+delta);if(!S.timer.running){S.timer.elapsed=0;S.timer.done=false;}render();},
+ tsave:function(){var t=S.timer;var title=S.preset?(S.preset.name||S.preset.title):t.mode;
+  S.log.unshift({title:title,format:S.preset?S.preset.format:t.mode,result:mmss(t.elapsed)+(t.rounds?" · "+t.rounds+" tours":""),date:today()});save();S.tab="profile";S.profView="log";render();}
+};
+function focusRestore(k){try{if(k==="title"){var i=main.querySelector("input");}else{var areas=main.querySelectorAll("textarea");}}catch(e){}}
+
+/* ===================== WAKE LOCK (anti-veille) ===================== */
+var wakeLock=null;          // verrou Wake Lock API (iOS 16.4+, iPadOS 16.4+)
+var noSleepVideo=null;      // solution de repli pour les anciens iOS
+async function requestWakeLock(){
+ // Évite de créer plusieurs verrous en parallèle (un seul suffit)
+ if(wakeLock) return;
+ try{
+   if("wakeLock" in navigator){
+     wakeLock=await navigator.wakeLock.request("screen");
+     wakeLock.addEventListener("release",function(){ wakeLock=null; });
+     return;
+   }
+ }catch(e){ wakeLock=null; }
+ // Repli : lecture en boucle d'une micro-vidéo invisible (iOS < 16.4)
+ startNoSleepFallback();
+}
+function startNoSleepFallback(){
+ try{
+   if(noSleepVideo){ noSleepVideo.play().catch(function(){}); return; }
+   var v=document.createElement("video");
+   v.setAttribute("playsinline","");
+   v.setAttribute("muted","");
+   v.muted=true; v.loop=true;
+   v.style.cssText="position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;left:0;top:0";
+   // Vidéo MP4 d'une frame, encodée en base64 (aucun fichier externe requis)
+   v.src="data:video/mp4;base64,AAAAHGZ0eXBpc29tAAACAGlzb21pc28ybXA0MQAAAAhmcmVlAAAAGm1kYXQAAAGzABAHAAABthADAowdbb9/AAAC6W1vb3YAAABsbXZoZAAAAAB8JbCAfCWwgAAAA+gAAAAAAAEAAAEAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAlh0cmFrAAAAXHRraGQAAAAPfCWwgHwlsIAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAQAAAAAEAAAABAAAAAAAkZWR0cwAAABxlbHN0AAAAAAAAAAEAAAAAAAAAAAABAAAAAAGwbWRpYQAAACBtZGhkAAAAAHwlsIB8JbCAAAAyAAAAAAFV4AAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABW21pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAARtzdGJsAAAAt3N0c2QAAAAAAAAAAQAAAKdhdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAEAAQAAAEgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGP//AAAAMWF2Y0MBQsAN/+EAGWdCwA3ZAsTsBEAAAPpAADqYA8UKkgAAAAaAAAAAQABAAAAGNhdmNDAQAAAAAAAQAAAAAAAAAYc3R0cwAAAAAAAAABAAAAAQAAMgAAAAAcc3RzYwAAAAAAAAABAAAAAQAAAAEAAAABAAAAFHN0c3oAAAAAAAAAAQAAAAEAAAAUc3RjbwAAAAAAAAABAAAALAAAAGB1ZHRhAAAAWG1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAG1kaXJhcHBsAAAAAAAAAAAAAAAALWlsc3QAAAAlqXRvbwAAAB1kYXRhAAAAAQAAAABMYXZmNTguMjkuMTAw";
+   document.body.appendChild(v);
+   noSleepVideo=v;
+   v.play().catch(function(){});
+ }catch(e){}
+}
+function setupWakeLock(){
+ // (re)prend le verrou dès qu'on revient sur l'app (le verrou est perdu au verrouillage / changement d'onglet)
+ document.addEventListener("visibilitychange",function(){ if(document.visibilityState==="visible") requestWakeLock(); });
+ // Le verrou doit être demandé suite à une interaction utilisateur sur iOS
+ var arm=function(){ requestWakeLock(); };
+ document.addEventListener("click",arm);
+ document.addEventListener("touchstart",arm,{passive:true});
+ requestWakeLock();
+}
+setupWakeLock();
+
+render();
+</script>
+</body>
+</html>
