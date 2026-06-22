@@ -322,10 +322,18 @@ function renderEx(){
 }
 function renderLog(){
  main.innerHTML=backBtn("Journal")+
-  (S.log.length?S.log.map(function(e,i){return '<div class="card listitem">'+
+  (S.log.length?S.log.map(function(e,i){
+    var prog="";
+    if(e.lines&&e.lines.length){
+     prog='<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line);color:var(--sub);font-size:13px;line-height:1.6;white-space:pre-wrap">'+
+       e.lines.map(function(l){return esc(l);}).join("\n")+'</div>';
+    }
+    return '<div class="card listitem" style="flex-direction:column;align-items:stretch">'+
+    '<div style="display:flex;align-items:center;gap:10px">'+
     '<div style="flex:1"><div style="font-weight:700">'+esc(e.title)+' <span style="color:var(--accent);font-size:12px">· '+esc(e.format)+'</span></div>'+
     '<div style="font-size:14px">'+esc(e.result)+'</div><div style="color:var(--sub);font-size:12px">'+esc(e.date)+'</div></div>'+
-    '<button class="heart" onclick="WF.delLog('+i+')">🗑</button></div>';}).join(""):'<div class="card empty">Vide. Termine un WOD au timer et enregistre-le.</div>');
+    '<button class="heart" onclick="WF.delLog('+i+')">🗑</button></div>'+
+    prog+'</div>';}).join(""):'<div class="card empty">Vide. Termine un WOD au timer et enregistre-le.</div>');
 }
 function renderPR(){
  main.innerHTML=backBtn("Records personnels")+
@@ -458,7 +466,8 @@ var WF={
  rounds:function(d){S.timer.rounds=Math.max(0,S.timer.rounds+d);updateTimerDisplay();},
  cfg:function(key,delta,min){S.timer[key]=Math.max(min,S.timer[key]+delta);if(!S.timer.running){S.timer.elapsed=0;S.timer.done=false;}render();},
  tsave:function(){var t=S.timer;var title=S.preset?(S.preset.name||S.preset.title):t.mode;
-  S.log.unshift({title:title,format:S.preset?S.preset.format:t.mode,result:mmss(t.elapsed)+(t.rounds?" · "+t.rounds+" tours":""),date:today()});save();S.tab="profile";S.profView="log";render();}
+  S.log.unshift({title:title,format:S.preset?S.preset.format:t.mode,result:mmss(t.elapsed)+(t.rounds?" · "+t.rounds+" tours":""),date:today(),
+   lines:(S.preset&&S.preset.lines)?S.preset.lines.slice():[]});save();S.tab="profile";S.profView="log";render();}
 };
 function focusRestore(k){try{if(k==="title"){var i=main.querySelector("input");}else{var areas=main.querySelectorAll("textarea");}}catch(e){}}
 
